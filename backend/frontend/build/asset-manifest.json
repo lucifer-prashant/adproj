@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/lucifer-prashant/adproj/static/css/main.d221dc40.css",
+    "main.js": "/lucifer-prashant/adproj/static/js/main.7512d163.js",
+    "index.html": "/lucifer-prashant/adproj/index.html",
+    "main.d221dc40.css.map": "/lucifer-prashant/adproj/static/css/main.d221dc40.css.map",
+    "main.7512d163.js.map": "/lucifer-prashant/adproj/static/js/main.7512d163.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d221dc40.css",
+    "static/js/main.7512d163.js"
+  ]
+}
