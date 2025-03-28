@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Diabetes Prediction</title>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				text-align: center;
+				margin: 20px;
+			}
+			.container {
+				max-width: 600px;
+				margin: auto;
+				padding: 20px;
+				border: 1px solid #ddd;
+				border-radius: 10px;
+			}
+			input,
+			select {
+				width: 100%;
+				padding: 10px;
+				margin: 5px 0;
+			}
+			button {
+				padding: 10px;
+				width: 100%;
+				background: blue;
+				color: white;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+			table {
+				width: 100%;
+				margin-top: 20px;
+				border-collapse: collapse;
+			}
+			th,
+			td {
+				border: 1px solid #ddd;
+				padding: 8px;
+				text-align: center;
+			}
+			.chart-container {
+				width: 100%;
+				height: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Diabetes Prediction</h1>
+
+			<label>Select Model</label>
+			<select id="modelSelect"></select>
+
+			<label>Enter Input Features:</label>
+			<input type="text" id="age" placeholder="Age (Years)" />
+			<input type="text" id="sex" placeholder="Sex (0 = Female, 1 = Male)" />
+			<input type="text" id="bmi" placeholder="Body Mass Index (BMI)" />
+			<input
+				type="text"
+				id="bp"
+				placeholder="Blood Pressure (Mean Arterial Pressure)" />
+			<input type="text" id="s1" placeholder="Total Serum Cholesterol" />
+			<input type="text" id="s2" placeholder="Low-Density Lipoprotein (LDL)" />
+			<input type="text" id="s3" placeholder="High-Density Lipoprotein (HDL)" />
+			<input type="text" id="s4" placeholder="Cholesterol / HDL Ratio" />
+			<input type="text" id="s5" placeholder="Log of Serum Triglycerides" />
+			<input type="text" id="s6" placeholder="Blood Sugar Level" />
+
+			<button onclick="predict()">Predict</button>
+
+			<h3>Prediction Result:</h3>
+			<div id="prediction"></div>
+
+			<h3>Prediction Confidence</h3>
+			<div class="chart-container">
+				<canvas id="confidenceChart"></canvas>
+			</div>
+
+			<h3>Model Comparison</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>Model</th>
+						<th>Prediction</th>
+						<th>Confidence</th>
+					</tr>
+				</thead>
+				<tbody id="modelResults"></tbody>
+			</table>
+		</div>
+
+		<script>
+			async function fetchModels() {
+				let response = await fetch("http://127.0.0.1:8000/models")
+				let data = await response.json()
+				let modelSelect = document.getElementById("modelSelect")
+				data.models.forEach((model) => {
+					let option = document.createElement("option")
+					option.value = model
+					option.textContent = model.replace("_", " ")
+					modelSelect.appendChild(option)
+				})
+			}
+
+			async function predict() {
+				let inputData = {
+					age: document.getElementById("age").value,
+					sex: document.getElementById("sex").value,
+					bmi: document.getElementById("bmi").value,
+					bp: document.getElementById("bp").value,
+					s1: document.getElementById("s1").value,
+					s2: document.getElementById("s2").value,
+					s3: document.getElementById("s3").value,
+					s4: document.getElementById("s4").value,
+					s5: document.getElementById("s5").value,
+					s6: document.getElementById("s6").value,
+				}
+
+				let modelType = document.getElementById("modelSelect").value
+				let response = await fetch("http://127.0.0.1:8000/predict", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						model_type: modelType,
+						input_data: inputData,
+					}),
+				})
+
+				let result = await response.json()
+				document.getElementById("prediction").textContent =
+					`Prediction: ${result.prediction} | Probability: ${result.probability}`
+
+				// Update confidence graph
+				let ctx = document.getElementById("confidenceChart").getContext("2d")
+				new Chart(ctx, {
+					type: "bar",
+					data: {
+						labels: ["Confidence"],
+						datasets: [
+							{
+								label: modelType,
+								data: [result.probability * 100],
+								backgroundColor: "blue",
+							},
+						],
+					},
+				})
+			}
+
+			fetchModels()
+		</script>
+	</body>
+</html>
